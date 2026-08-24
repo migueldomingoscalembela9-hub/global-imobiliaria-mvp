@@ -54,57 +54,87 @@ A identidade visual da Global Imobiliária transmite **confiança, profissionali
 
 ## TIPOGRAFIA
 
+### Família de Fontes
+
+- **Display (Títulos)**: Playfair Display — serif premium e elegante, transmite sofisticación e confianza
+- **Sans-serif (Corpo)**: Inter — moderna, limpa e altamente legible
+- **Mono** (referências, códigos): Fonte monoespacial do sistema
+
 ### Hierarquia
 
 ```
-H1: 4xl (36px) / 5xl (48px) 
+Display-1: 5xl (48px) / 6xl (60px)
+    font-family: Playfair Display
     font-weight: bold
     text-slate-900
     tracking-tight
-    Uso: Títulos de página, headlines
+    Uso: Hero sections, headlines principais
+
+Display-2: 4xl (36px) / 5xl (48px)
+    font-family: Playfair Display
+    font-weight: bold
+    text-slate-900
+    tracking-tight
+    Uso: Títulos de seção, headlines
+
+Display-3: 3xl (30px) / 4xl (36px)
+    font-family: Playfair Display
+    font-weight: bold
+    text-slate-900
+    tracking-tight
+    Uso: Títulos de subsecção
+
+H1: 4xl (36px) / 5xl (48px)
+    font-family: Playfair Display
+    font-weight: bold
+    text-slate-900
+    tracking-tight
+    Uso: Título principal de página
 
 H2: 3xl (30px) / 4xl (36px)
+    font-family: Playfair Display
     font-weight: bold
     text-slate-900
     tracking-tight
     Uso: Títulos de seção
 
 H3: 2xl (24px)
+    font-family: Playfair Display
     font-weight: bold
     text-slate-900
     tracking-tight
     Uso: Títulos de subsecção
 
 H4: xl (20px)
+    font-family: Playfair Display
     font-weight: semibold
     text-slate-900
     Uso: Títulos em cards
 
 Body: base (16px)
+    font-family: Inter
     font-weight: normal
     text-slate-900
     line-height: relaxed
     Uso: Texto principal, conteúdo
 
 Small: sm (14px)
+    font-family: Inter
     font-weight: normal
     text-slate-600
     Uso: Texto secundário, descrições
 
 Label: sm (14px)
+    font-family: Inter
     font-weight: medium
     text-slate-700
     Uso: Labels de formulários
 
 Meta: xs (12px)
+    font-family: Inter
     text-slate-500
     Uso: Informações auxiliares, timestamps
 ```
-
-### Família de Fontes
-
-- **Sans-serif**: Inter, Segoe UI, Roboto, Helvetica Neue, Arial
-- **Mono** (referências, códigos): Fonte monoespacial do sistema
 
 ---
 

@@ -3,6 +3,7 @@ import { getSessionUser } from '@/lib/auth/session';
 import { isAdmin } from '@/lib/permissions';
 import { prisma } from '@/lib/db';
 import Link from 'next/link';
+import AdminReviewActions from '@/components/admin/AdminReviewActions';
 
 export const dynamic = 'force-dynamic';
 
@@ -80,20 +81,8 @@ export default async function AdminRevisoesPage() {
                     Submetido em {new Date(p.updatedAt).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                   </p>
 
-                  <div className="mt-5 flex flex-wrap gap-3">
-                    <form action={`/api/v1/admin/properties/${p.id}/approve`} method="POST">
-                      <button type="submit" className="btn-primary">Aprovar</button>
-                    </form>
-                    <form action={`/api/v1/admin/properties/${p.id}/reject`} method="POST" className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        name="reason"
-                        required
-                        placeholder="Motivo da rejeição (obrigatório)"
-                        className="input w-56 text-sm"
-                      />
-                      <button type="submit" className="btn-danger">Rejeitar</button>
-                    </form>
+                  <div className="mt-5">
+                    <AdminReviewActions propertyId={p.id} propertyTitle={p.title} />
                   </div>
 
                   {p.reviews.length > 0 && (

@@ -1,5 +1,7 @@
-﻿import Link from 'next/link';
+import Link from 'next/link';
 import { getSessionUser } from '@/lib/auth/session';
+
+import LogoutButton from '@/components/auth/LogoutButton';
 
 export default async function PublicHeader() {
   const user = await getSessionUser();
@@ -16,20 +18,30 @@ export default async function PublicHeader() {
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">
-          <Link href="/imoveis" className="text-sm font-medium text-slate-700 hover:text-brand-600">Comprar</Link>
-          <Link href="/imoveis" className="text-sm font-medium text-slate-700 hover:text-brand-600">Arrendar</Link>
+          <Link href="/imoveis?purpose=SALE" className="text-sm font-medium text-slate-700 hover:text-brand-600">Comprar</Link>
+          <Link href="/imoveis?purpose=RENT" className="text-sm font-medium text-slate-700 hover:text-brand-600">Arrendar</Link>
           <Link href="/imoveis" className="text-sm font-medium text-slate-700 hover:text-brand-600">Imóveis</Link>
         </nav>
 
-        {isAuthenticated ? (
-          <div className="flex items-center gap-3">
-            <Link href={user?.role === 'ADMIN' ? '/admin' : '/dashboard'} className="btn-secondary text-sm">
-              {user?.name.split(' ')[0]}
-            </Link>
-            <Link href="/dashboard/perfil" className="text-sm font-medium text-slate-700 hover:text-brand-600">Perfil</Link>
-            <form action="/api/v1/auth/logout" method="POST">
-              <button type="submit" className="btn-secondary text-sm">Terminar sessão</button>
-            </form>
+        {isAuthenticated && user ? (
+          <div className="flex items-center gap-4">
+            <span className="hidden text-sm font-semibold text-slate-900 sm:inline-flex">{user.name}</span>
+            <div className="flex items-center gap-3">
+              <Link
+                href={user.role === 'ADMIN' ? '/admin' : '/dashboard'}
+                className="btn-primary text-sm flex items-center gap-1.5"
+              >
+                <span>📊</span>
+                <span>Painel</span>
+              </Link>
+              <Link
+                href="/dashboard/perfil"
+                className="hidden sm:inline-flex text-sm font-medium text-slate-700 hover:text-brand-600"
+              >
+                Perfil
+              </Link>
+              <LogoutButton variant="secondary" className="text-sm py-2 px-3" showIcon={false} />
+            </div>
           </div>
         ) : (
           <div className="flex items-center gap-3">

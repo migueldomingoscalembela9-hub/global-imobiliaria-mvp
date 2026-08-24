@@ -14,12 +14,23 @@ export class AuthError extends Error {
 export async function registerUser(input: RegisterInput) {
   const parsed = registerSchema.parse(input);
 
-  const existing = await prisma.user.findUnique({
-    where: { email: parsed.email.toLowerCase() }
+  const normalizedEmail = parsed.email.toLowerCase().trim();
+  const normalizedPhone = parsed.phone.trim();
+
+  const existingEmail = await prisma.user.findUnique({
+    where: { email: normalizedEmail }
   });
 
-  if (existing) {
+  if (existingEmail) {
     throw new AuthError('Já existe uma conta com este email.', 'EMAIL_EXISTS');
+  }
+
+  const existingPhone = await prisma.user.findFirst({
+    where: { phone: normalizedPhone }
+  });
+
+  if (existingPhone) {
+    throw new AuthError('Já existe uma conta associada a este número de telefone.', 'PHONE_EXISTS');
   }
 
   const role = await prisma.role.findUnique({

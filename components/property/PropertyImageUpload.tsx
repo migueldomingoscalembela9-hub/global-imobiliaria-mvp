@@ -1,22 +1,29 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
 
 interface ImageItem {
   id: string;
-  dataUrl: string;
+  previewUrl: string;
   name: string;
   file: File;
+  uploadedUrl?: string;
+  uploading?: boolean;
+}
+
+export interface PropertyImageUploadHandle {
+  uploadAll: () => Promise<string[]>;
 }
 
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 const MAX_IMAGES = 12;
 
-export default function PropertyImageUpload() {
+const PropertyImageUpload = forwardRef<PropertyImageUploadHandle>(function PropertyImageUpload(_, ref) {
   const [images, setImages] = useState<ImageItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [coverId, setCoverId] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFiles = useCallback((files: FileList | null) => {
@@ -35,33 +42,28 @@ export default function PropertyImageUpload() {
         continue;
       }
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const dataUrl = e.target?.result as string;
-        accepted.push({
-          id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-          dataUrl,
-          name: file.name,
-          file
-        });
-
-        if (accepted.length === files.length) {
-          setImages((prev) => {
-            const next = [...prev, ...accepted].slice(0, MAX_IMAGES);
-            if (next.length > 0 && !coverId) {
-              setCoverId(next[0].id);
-            }
-            return next;
-          });
-        }
-      };
-      reader.readAsDataURL(file);
+      accepted.push({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        previewUrl: URL.createObjectURL(file),
+        name: file.name,
+        file
+      });
     }
 
-    if (files.length === 0) {
-      setImages([]);
+    if (accepted.length > 0) {
+      setImages((prev) => {
+        const next = [...prev, ...accepted].slice(0, MAX_IMAGES);
+        if (next.length > 0 && !coverId) {
+          setCoverId(next[0].id);
+        }
+        return next;
+      });
     }
   }, [coverId]);
+
+  useImperativeHandle(ref, () => ({
+    uploadAll
+  }));
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     handleFiles(e.target.files);
@@ -88,6 +90,40 @@ export default function PropertyImageUpload() {
     });
   }
 
+  async function uploadAll(): Promise<string[]> {
+    const pending = images.filter((img) => !img.uploadedUrl);
+    if (pending.length === 0) {
+      return images.map((img) => img.uploadedUrl!).filter(Boolean);
+    }
+
+    setUploading(true);
+    try {
+      const urls: string[] = [];
+      for (const img of pending) {
+        const formData = new FormData();
+        formData.append('file', img.file);
+
+        const res = await fetch('/api/v1/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error?.message ?? 'Erro ao enviar imagem.');
+        }
+
+        urls.push(data.data.url);
+        setImages((prev) =>
+          prev.map((i) => (i.id === img.id ? { ...i, uploadedUrl: data.data.url, uploading: false } : i))
+        );
+      }
+      return urls;
+    } finally {
+      setUploading(false);
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
@@ -95,8 +131,9 @@ export default function PropertyImageUpload() {
           type="button"
           onClick={() => fileInputRef.current?.click()}
           className="btn-primary"
+          disabled={uploading}
         >
-          + Adicionar fotografias
+          {uploading ? 'A enviar...' : '+ Adicionar fotografias'}
         </button>
         <p className="text-xs text-slate-500">
           JPG, PNG ou WEBP · Máx. 5MB · {images.length}/{MAX_IMAGES}
@@ -136,7 +173,7 @@ export default function PropertyImageUpload() {
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {images.map((img, idx) => (
             <div key={img.id} className="group relative overflow-hidden rounded-xl border border-slate-200">
-              <img src={img.dataUrl} alt={`Fotografia ${idx + 1}`} className="aspect-square w-full object-cover" />
+              <img src={img.previewUrl} alt={`Fotografia ${idx + 1}`} className="aspect-square w-full object-cover" />
               {img.id === coverId && (
                 <span className="absolute left-2 top-2 badge-green">Capa</span>
               )}
@@ -145,7 +182,7 @@ export default function PropertyImageUpload() {
                   <button
                     type="button"
                     onClick={() => moveImage(idx, -1)}
-                    disabled={idx === 0}
+                    disabled={idx === 0 || uploading}
                     className="rounded bg-white/20 px-1.5 text-white transition-colors hover:bg-white/40 disabled:opacity-30"
                     aria-label="Mover para a esquerda"
                   >
@@ -154,7 +191,7 @@ export default function PropertyImageUpload() {
                   <button
                     type="button"
                     onClick={() => moveImage(idx, 1)}
-                    disabled={idx === images.length - 1}
+                    disabled={idx === images.length - 1 || uploading}
                     className="rounded bg-white/20 px-1.5 text-white transition-colors hover:bg-white/40 disabled:opacity-30"
                     aria-label="Mover para a direita"
                   >
@@ -166,6 +203,7 @@ export default function PropertyImageUpload() {
                     <button
                       type="button"
                       onClick={() => setCoverId(img.id)}
+                      disabled={uploading}
                       className="rounded bg-white/20 px-1.5 text-xs text-white transition-colors hover:bg-white/40"
                       aria-label="Definir como capa"
                     >
@@ -175,6 +213,7 @@ export default function PropertyImageUpload() {
                   <button
                     type="button"
                     onClick={() => removeImage(img.id)}
+                    disabled={uploading}
                     className="rounded bg-red-500/70 px-1.5 text-white transition-colors hover:bg-red-600"
                     aria-label="Remover imagem"
                   >
@@ -187,9 +226,12 @@ export default function PropertyImageUpload() {
         </div>
       )}
 
-      {/* Campo oculto para enviar as imagens no formulário */}
-      <input type="hidden" name="imagesData" value={JSON.stringify(images.map((img) => img.dataUrl))} />
+      {/* Campos ocultos para o formulário */}
       <input type="hidden" name="coverImageIndex" value={images.findIndex((img) => img.id === coverId).toString()} />
+      <input type="hidden" name="images" value={images.map((img) => img.uploadedUrl ?? '').join('\n')} />
+      <input type="hidden" name="pendingImages" value={images.filter((img) => !img.uploadedUrl).length.toString()} />
     </div>
   );
-}
+});
+
+export default PropertyImageUpload;

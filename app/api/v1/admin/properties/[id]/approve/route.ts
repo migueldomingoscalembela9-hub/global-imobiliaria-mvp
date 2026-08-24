@@ -21,7 +21,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const updated = await prisma.property.update({
       where: { id },
       data: {
-        status: 'APPROVED',
+        status: 'PUBLISHED',
+        publishedAt: new Date(),
         rejectionReason: null,
         approvedById: admin.id,
         approvedAt: new Date()

@@ -1,4 +1,4 @@
-﻿import { redirect } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/auth/session';
 import { isAdmin } from '@/lib/permissions';
 import { prisma } from '@/lib/db';
@@ -26,67 +26,50 @@ export default async function AdminVisitasPage() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="container-page flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-lg font-bold text-brand-700">Global Imobiliária</span>
-            <span className="badge-purple">Admin</span>
-          </div>
-          <nav className="flex items-center gap-4">
-            <Link href="/admin" className="text-sm text-slate-600 hover:text-brand-700">Dashboard</Link>
-            <form action="/api/v1/auth/logout" method="POST">
-              <button type="submit" className="btn-secondary text-sm">Sair</button>
-            </form>
-          </nav>
-        </div>
-      </header>
+    <div>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-slate-900">Pedidos de Visita</h1>
+        <p className="mt-1 text-sm text-slate-600">Consultar todos os pedidos de visita da plataforma.</p>
+      </div>
 
-      <main className="container-page py-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-slate-900">Pedidos de Visita</h1>
-          <p className="mt-1 text-sm text-slate-600">Consultar todos os pedidos de visita.</p>
-        </div>
-
-        <div className="card overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-slate-200 bg-slate-50">
+      <div className="card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="border-b border-slate-200 bg-slate-50">
+              <tr>
+                <th className="px-4 py-3 font-medium text-slate-600">Solicitante</th>
+                <th className="px-4 py-3 font-medium text-slate-600">Imóvel</th>
+                <th className="px-4 py-3 font-medium text-slate-600">Data</th>
+                <th className="px-4 py-3 font-medium text-slate-600">Hora</th>
+                <th className="px-4 py-3 font-medium text-slate-600">Estado</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {visits.length === 0 ? (
                 <tr>
-                  <th className="px-4 py-3 font-medium text-slate-600">Solicitante</th>
-                  <th className="px-4 py-3 font-medium text-slate-600">Imóvel</th>
-                  <th className="px-4 py-3 font-medium text-slate-600">Data</th>
-                  <th className="px-4 py-3 font-medium text-slate-600">Hora</th>
-                  <th className="px-4 py-3 font-medium text-slate-600">Estado</th>
+                  <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
+                    Ainda não existem pedidos de visita.
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {visits.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
-                      Ainda não existem pedidos de visita.
+              ) : (
+                visits.map((v) => (
+                  <tr key={v.id} className="hover:bg-slate-50">
+                    <td className="px-4 py-3 font-medium text-slate-900">{v.requester.name}</td>
+                    <td className="px-4 py-3 text-slate-600">{v.property.title}</td>
+                    <td className="px-4 py-3 text-slate-600">
+                      {new Date(v.preferredDate).toLocaleDateString('pt-PT')}
+                    </td>
+                    <td className="px-4 py-3 text-slate-600">{v.preferredTime}</td>
+                    <td className="px-4 py-3">
+                      <span className={STATUS_BADGES[v.status] ?? 'badge-gray'}>{v.status}</span>
                     </td>
                   </tr>
-                ) : (
-                  visits.map((v) => (
-                    <tr key={v.id} className="hover:bg-slate-50">
-                      <td className="px-4 py-3 font-medium text-slate-900">{v.requester.name}</td>
-                      <td className="px-4 py-3 text-slate-600">{v.property.title}</td>
-                      <td className="px-4 py-3 text-slate-600">
-                        {new Date(v.preferredDate).toLocaleDateString('pt-PT')}
-                      </td>
-                      <td className="px-4 py-3 text-slate-600">{v.preferredTime}</td>
-                      <td className="px-4 py-3">
-                        <span className={STATUS_BADGES[v.status] ?? 'badge-gray'}>{v.status}</span>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

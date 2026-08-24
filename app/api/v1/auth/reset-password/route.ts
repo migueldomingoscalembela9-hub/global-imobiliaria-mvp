@@ -1,20 +1,25 @@
-﻿import { NextRequest } from 'next/server';
+import { NextRequest } from 'next/server';
 import { resetPasswordSchema } from '@/lib/validation/auth';
-import { hashPassword } from '@/lib/auth/password';
+import { hashPassword, verifyPasswordResetToken } from '@/lib/auth/password';
 import { prisma } from '@/lib/db';
-import { success, handleError } from '@/lib/api/response';
+import { success, error, handleError } from '@/lib/api/response';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const parsed = resetPasswordSchema.parse(body);
 
+    const tokenPayload = await verifyPasswordResetToken(parsed.token);
+    if (!tokenPayload) {
+      return error('O link de recuperação é inválido ou já expirou. Solicite um novo.', 400, 'INVALID_TOKEN');
+    }
+
     const user = await prisma.user.findUnique({
-      where: { id: parsed.token }
+      where: { id: tokenPayload.userId }
     });
 
-    if (!user) {
-      return success({ message: 'Token inválido ou expirado.' });
+    if (!user || user.status === 'BLOCKED') {
+      return error('Conta de utilizador não encontrada ou bloqueada.', 400, 'INVALID_USER');
     }
 
     const passwordHash = await hashPassword(parsed.password);
@@ -24,7 +29,7 @@ export async function POST(request: NextRequest) {
       data: { passwordHash }
     });
 
-    return success({ message: 'Palavra-passe atualizada com sucesso.' });
+    return success({ message: 'Palavra-passe atualizada com sucesso. Já pode iniciar sessão.' });
   } catch (err) {
     return handleError(err);
   }

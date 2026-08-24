@@ -1,7 +1,15 @@
+import { redirect } from 'next/navigation';
+import { getSessionUser } from '@/lib/auth/session';
 import Link from 'next/link';
 import ForgotPasswordForm from '@/components/forms/ForgotPasswordForm';
 
-export default function RecuperarPasswordPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function RecuperarPasswordPage() {
+  const user = await getSessionUser();
+  if (user) {
+    redirect(user.role === 'ADMIN' ? '/admin' : '/dashboard');
+  }
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12">
       <div className="w-full max-w-md">

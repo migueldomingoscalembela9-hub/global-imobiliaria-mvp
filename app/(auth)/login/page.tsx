@@ -1,7 +1,15 @@
+import { redirect } from 'next/navigation';
+import { getSessionUser } from '@/lib/auth/session';
 import Link from 'next/link';
 import LoginForm from '@/components/forms/LoginForm';
 
-export default function LoginPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function LoginPage() {
+  const user = await getSessionUser();
+  if (user) {
+    redirect(user.role === 'ADMIN' ? '/admin' : '/dashboard');
+  }
   return (
     <div className="flex min-h-screen items-center justify-center bg-white px-4 py-12">
       <div className="w-full max-w-md">

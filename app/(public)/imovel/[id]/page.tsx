@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
+import { getSessionUser } from '@/lib/auth/session';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,6 +29,10 @@ export default async function ImovelPage({ params }: { params: Promise<{ id: str
   if (!property) {
     notFound();
   }
+
+  const sessionUser = await getSessionUser();
+  const isAuthenticated = Boolean(sessionUser);
+  const loginRedirect = `/login?redirect=/imovel/${id}`;
 
   const cover = property.images.find((img) => img.isCover) ?? property.images[0];
 
@@ -136,20 +141,20 @@ export default async function ImovelPage({ params }: { params: Promise<{ id: str
                 </div>
                 <div>
                   <p className="font-semibold text-slate-900">{property.owner.name}</p>
-                  <p className="text-sm text-slate-600">{property.owner.phone}</p>
+                  <p className="text-sm text-slate-600">Contacte através do botão abaixo</p>
                 </div>
               </div>
             </div>
 
             {/* CTAs */}
             <div className="space-y-3">
-              <Link href="/login" className="btn-primary w-full">
+              <Link href={isAuthenticated ? `/imovel/${id}/contactar` : loginRedirect} className="btn-primary w-full">
                 💬 Contactar anunciante
               </Link>
-              <Link href="/login" className="btn-secondary w-full">
+              <Link href={isAuthenticated ? `/imovel/${id}/visita` : loginRedirect} className="btn-secondary w-full">
                 📅 Solicitar visita
               </Link>
-              <Link href="/login" className="btn-secondary w-full">
+              <Link href={isAuthenticated ? `/imovel/${id}/favorito` : loginRedirect} className="btn-secondary w-full">
                 ❤️ Adicionar aos favoritos
               </Link>
             </div>

@@ -90,29 +90,32 @@ export async function POST(request: NextRequest) {
       return Response.json({ success: false, error: { code: 'FORBIDDEN', message: 'Sem permissão para publicar imóveis.' } }, { status: 403 });
     }
 
-    const formData = await request.formData();
-    const title = String(formData.get('title') ?? '');
-    const description = String(formData.get('description') ?? '');
-    const propertyType = String(formData.get('propertyType') ?? '');
-    const purpose = String(formData.get('purpose') ?? '');
-    const price = Number(formData.get('price') ?? 0);
-    const currency = String(formData.get('currency') ?? 'AOA');
-    const areaM2 = formData.get('areaM2') ? Number(formData.get('areaM2')) : null;
-    const bedrooms = formData.get('bedrooms') ? Number(formData.get('bedrooms')) : null;
-    const bathrooms = formData.get('bathrooms') ? Number(formData.get('bathrooms')) : null;
-    const parkingSpaces = formData.get('parkingSpaces') ? Number(formData.get('parkingSpaces')) : null;
-    const province = String(formData.get('province') ?? '');
-    const municipality = String(formData.get('municipality') ?? '');
-    const district = String(formData.get('district') ?? '');
-    const neighborhood = String(formData.get('neighborhood') ?? '');
-    const address = String(formData.get('address') ?? '');
-    const action = String(formData.get('action') ?? 'draft');
+    const body = await request.json();
+    const {
+      title = '',
+      description = '',
+      propertyType = '',
+      purpose = '',
+      price = 0,
+      currency = 'AOA',
+      areaM2 = null,
+      bedrooms = null,
+      bathrooms = null,
+      parkingSpaces = null,
+      province = '',
+      municipality = '',
+      district = '',
+      neighborhood = '',
+      address = '',
+      action = 'draft',
+      images = '',
+      coverImageIndex = 0
+    } = body as Record<string, unknown>;
 
     if (!title || !description || !propertyType || !purpose || !price || !province || !municipality) {
       return error('Campos obrigatórios em falta.', 400, 'VALIDATION_ERROR');
     }
 
-    const role = await prisma.role.findUnique({ where: { code: user.role as never } });
     const roleUser = await prisma.user.findUnique({ where: { id: user.id }, include: { role: true } });
     if (!roleUser) return error('Utilizador não encontrado.', 404, 'NOT_FOUND');
 
@@ -122,27 +125,29 @@ export async function POST(request: NextRequest) {
       data: {
         reference,
         ownerId: user.id,
-        title,
-        description,
-        propertyType: propertyType as never,
-        purpose: purpose as never,
-        price,
-        currency,
-        areaM2,
-        bedrooms,
-        bathrooms,
-        parkingSpaces,
-        province,
-        municipality,
-        district: district || null,
-        neighborhood: neighborhood || null,
-        address: address || null,
-        status: action === 'submit' ? 'REVIEW' : 'DRAFT'
+        title: String(title),
+        description: String(description),
+        propertyType: String(propertyType) as never,
+        purpose: String(purpose) as never,
+        price: Number(price),
+        currency: String(currency || 'AOA'),
+        areaM2: areaM2 ? Number(areaM2) : null,
+        bedrooms: bedrooms != null ? Number(bedrooms) : null,
+        bathrooms: bathrooms != null ? Number(bathrooms) : null,
+        parkingSpaces: parkingSpaces != null ? Number(parkingSpaces) : null,
+        province: String(province),
+        municipality: String(municipality),
+        district: district ? String(district) : null,
+        neighborhood: neighborhood ? String(neighborhood) : null,
+        address: address ? String(address) : null,
+        status: String(action) === 'submit' ? 'REVIEW' : 'DRAFT'
       }
     });
 
     // Processar imagens
-    const imagesRaw = String(formData.get('images') ?? '');
+    const imagesRaw = String(images ?? '');
+    const coverIndex = Number(coverImageIndex) >= 0 ? Number(coverImageIndex) : 0;
+
     if (imagesRaw.trim()) {
       const urls = imagesRaw.split('\n').map((u) => u.trim()).filter(Boolean);
       await prisma.propertyImage.createMany({
@@ -150,14 +155,14 @@ export async function POST(request: NextRequest) {
           propertyId: property.id,
           imageUrl: url,
           sortOrder: idx,
-          isCover: idx === 0
+          isCover: idx === coverIndex
         }))
       });
     }
 
-    if (action === 'submit') {
+    if (String(action) === 'submit') {
       await prisma.propertyReview.create({
-        data: { propertyId: property.id, adminId: '', action: 'SUBMITTED', reason: null }
+        data: { propertyId: property.id, adminId: user.id, action: 'SUBMITTED', reason: null }
       });
     }
 

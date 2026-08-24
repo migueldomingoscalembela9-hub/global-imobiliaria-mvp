@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { ZodError } from 'zod';
 import { AuthError } from '@/services/auth/auth.service';
 
@@ -19,6 +19,7 @@ export function handleError(err: unknown) {
   if (err instanceof AuthError) {
     const statusMap: Record<string, number> = {
       EMAIL_EXISTS: 409,
+      PHONE_EXISTS: 409,
       INVALID_CREDENTIALS: 401,
       ACCOUNT_BLOCKED: 403,
       ACCOUNT_PENDING: 403,

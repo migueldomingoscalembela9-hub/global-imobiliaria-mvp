@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/auth/session';
 import { prisma } from '@/lib/db';
 import Link from 'next/link';
+import RemoveFavoriteButton from '@/components/property/RemoveFavoriteButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -72,11 +73,7 @@ export default async function FavoritosPage() {
                 </div>
               </Link>
               <div className="border-t border-slate-100 p-4">
-                <form action={`/api/v1/properties/${fav.property.id}/favorite`} method="DELETE" className="w-full">
-                  <button type="submit" className="btn-secondary w-full text-sm hover:bg-red-50 hover:text-red-700 hover:border-red-200">
-                    Remover favorito
-                  </button>
-                </form>
+                <RemoveFavoriteButton propertyId={fav.property.id} />
               </div>
             </div>
           ))}

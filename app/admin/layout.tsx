@@ -3,6 +3,8 @@ import { getSessionUser } from '@/lib/auth/session';
 import { isAdmin } from '@/lib/permissions';
 import Link from 'next/link';
 
+import LogoutButton from '@/components/auth/LogoutButton';
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await getSessionUser();
 
@@ -57,9 +59,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </nav>
 
         <div className="border-t border-slate-200 p-3">
-          <form action="/api/v1/auth/logout" method="POST">
-            <button type="submit" className="btn-secondary w-full text-sm">Terminar sessão</button>
-          </form>
+          <LogoutButton variant="secondary" className="w-full text-sm" />
         </div>
       </aside>
 

@@ -1,10 +1,12 @@
-﻿import Link from 'next/link';
+import Link from 'next/link';
 import { prisma } from '@/lib/db';
+import { getSessionUser } from '@/lib/auth/session';
 
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  const [featured, recent] = await Promise.all([
+  const [sessionUser, featured, recent] = await Promise.all([
+    getSessionUser(),
     prisma.property.findMany({
       where: { status: 'PUBLISHED' },
       include: { images: { orderBy: { sortOrder: 'asc' }, take: 1 } },
@@ -26,11 +28,11 @@ export default async function HomePage() {
         <div className="container-page">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-sm font-semibold uppercase tracking-widest text-brand-200">Global Holding</p>
-            <h1 className="mt-4 text-5xl sm:text-6xl font-bold">
+            <h1 className="mt-4 display-1">
               Encontre o imóvel perfeito em Angola
             </h1>
             <p className="mt-6 text-xl text-brand-100">
-              Compre, arrende ou publique imóveis com confiança na plataforma imobiliária da Global Holding.
+              Compre, arrende ou publique imóveis com confiança na Global Imobiliária.
             </p>
 
             {/* Pesquisa */}
@@ -58,9 +60,15 @@ export default async function HomePage() {
               <Link href="/imoveis?finalidade=ARRENDAMENTO" className="font-semibold text-brand-100 hover:text-white transition-colors">
                 Arrendar →
               </Link>
-              <Link href="/registo" className="font-semibold text-brand-100 hover:text-white transition-colors">
-                Publicar imóvel →
-              </Link>
+              {sessionUser ? (
+                <Link href={sessionUser.role === 'ADMIN' ? '/admin' : '/dashboard/imoveis/novo'} className="font-semibold text-brand-100 hover:text-white transition-colors">
+                  {sessionUser.role === 'ADMIN' ? 'Painel Admin →' : 'Publicar imóvel →'}
+                </Link>
+              ) : (
+                <Link href="/registo" className="font-semibold text-brand-100 hover:text-white transition-colors">
+                  Publicar imóvel →
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -71,7 +79,7 @@ export default async function HomePage() {
         <div className="container-page">
           <div className="mb-12 flex items-end justify-between">
             <div>
-              <h2 className="text-4xl font-bold text-slate-900">Imóveis em destaque</h2>
+              <h2 className="display-2 text-slate-900">Imóveis em destaque</h2>
               <p className="mt-3 text-lg text-slate-600">As melhores oportunidades selecionadas para si.</p>
             </div>
             <Link href="/imoveis" className="text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors">
@@ -132,7 +140,7 @@ export default async function HomePage() {
         <div className="container-page">
           <div className="mb-12 flex items-end justify-between">
             <div>
-              <h2 className="text-4xl font-bold text-slate-900">Imóveis recentes</h2>
+              <h2 className="display-2 text-slate-900">Imóveis recentes</h2>
               <p className="mt-3 text-lg text-slate-600">As últimas novidades do mercado.</p>
             </div>
             <Link href="/imoveis" className="text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors">
@@ -189,17 +197,30 @@ export default async function HomePage() {
       <section className="py-20">
         <div className="container-page">
           <div className="rounded-2xl bg-gradient-to-r from-brand-800 to-brand-600 p-12 sm:p-16 text-center text-white">
-            <h2 className="text-4xl font-bold">Tem um imóvel para publicar?</h2>
+            <h2 className="display-2">Tem um imóvel para publicar?</h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-brand-100">
               Publique o seu imóvel gratuitamente e alcance milhares de potenciais compradores e arrendatários em Angola.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Link href="/registo" className="btn-gold">
-                Criar conta gratuita
-              </Link>
-              <Link href="/login" className="btn-secondary">
-                Já tenho conta
-              </Link>
+              {sessionUser ? (
+                <>
+                  <Link href={sessionUser.role === 'ADMIN' ? '/admin' : '/dashboard/imoveis/novo'} className="btn-gold">
+                    {sessionUser.role === 'ADMIN' ? 'Painel Administrativo' : 'Publicar novo imóvel'}
+                  </Link>
+                  <Link href={sessionUser.role === 'ADMIN' ? '/admin' : '/dashboard'} className="btn-secondary">
+                    Ir para o meu painel
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link href="/registo" className="btn-gold">
+                    Criar conta gratuita
+                  </Link>
+                  <Link href="/login" className="btn-secondary">
+                    Já tenho conta
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

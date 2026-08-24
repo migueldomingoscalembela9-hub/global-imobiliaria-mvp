@@ -25,10 +25,23 @@ interface SearchResponse {
   total: number;
 }
 
-export default function PropertySearch() {
-  const [query, setQuery] = useState('');
-  const [purpose, setPurpose] = useState('');
+interface PropertySearchProps {
+  initialQuery?: string;
+  initialPurpose?: string;
+}
+
+// Mapear a convenção pública (COMPRA/ARRENDAMENTO) para a convenção da BD (SALE/RENT)
+function mapPurpose(purpose: string): string {
+  if (purpose === 'COMPRA') return 'SALE';
+  if (purpose === 'ARRENDAMENTO') return 'RENT';
+  return purpose;
+}
+
+export default function PropertySearch({ initialQuery = '', initialPurpose = '' }: PropertySearchProps) {
+  const [query, setQuery] = useState(initialQuery);
+  const [purpose, setPurpose] = useState(mapPurpose(initialPurpose));
   const [results, setResults] = useState<SearchItem[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -60,11 +73,14 @@ export default function PropertySearch() {
         const data = await res.json();
         if (res.ok) {
           setResults(data.data.items ?? []);
+          setTotal(data.data.total ?? 0);
         } else {
           setResults([]);
+          setTotal(0);
         }
       } catch {
         setResults([]);
+        setTotal(0);
       } finally {
         setLoading(false);
         setSearched(true);
@@ -178,7 +194,7 @@ export default function PropertySearch() {
 
         {results.length > 0 && (
           <>
-            <p className="mb-4 text-sm text-slate-600">{results.length} imóveis encontrados</p>
+            <p className="mb-4 text-sm text-slate-600">{total} imóveis encontrados</p>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {results.map((property) => (
                 <Link key={property.id} href={`/imovel/${property.id}`} className="card group overflow-hidden transition-shadow hover:shadow-lg">

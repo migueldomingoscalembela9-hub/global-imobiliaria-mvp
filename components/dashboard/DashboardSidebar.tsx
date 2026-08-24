@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { isAdmin, isOwnerOrAgent } from '@/lib/permissions';
 import type { RoleCode } from '@prisma/client';
 
+import LogoutButton from '@/components/auth/LogoutButton';
+
 interface DashboardSidebarProps {
   role: RoleCode;
   userName: string;
@@ -42,95 +44,95 @@ export default function DashboardSidebar({ role, userName }: DashboardSidebarPro
 
       {/* Navegação */}
       <nav className="flex-1 space-y-1 p-3">
-        <Link 
-          href="/dashboard" 
+        <Link
+          href="/dashboard"
           className="group flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-colors"
         >
-          🏠 Dashboard
+          Dashboard
         </Link>
 
         {isClient && (
           <>
-            <Link 
-              href="/imoveis" 
+            <Link
+              href="/imoveis"
               className="group flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-colors"
             >
-              🏢 Imóveis
+              Imóveis
             </Link>
-            <Link 
-              href="/dashboard/favoritos" 
+            <Link
+              href="/dashboard/favoritos"
               className="group flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-colors"
             >
-              ❤️ Favoritos
+              Favoritos
             </Link>
           </>
         )}
 
         {isOwn && (
           <>
-            <Link 
-              href="/dashboard/imoveis" 
+            <Link
+              href="/dashboard/imoveis"
               className="group flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-colors"
             >
-              📋 Meus imóveis
+              Meus imóveis
             </Link>
-            <Link 
-              href="/dashboard/imoveis/novo" 
+            <Link
+              href="/dashboard/imoveis/novo"
               className="group flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-brand-600 hover:bg-brand-50 transition-colors"
             >
-              ➕ Novo imóvel
+              Novo imóvel
             </Link>
           </>
         )}
 
         <div className="my-2 border-t border-slate-200"></div>
 
-        <Link 
-          href="/dashboard/contactos" 
+        <Link
+          href="/dashboard/contactos"
           className="group flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-colors"
         >
-          💬 Contactos
+          Contactos
         </Link>
-        <Link 
-          href="/dashboard/visitas" 
+        <Link
+          href="/dashboard/visitas"
           className="group flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-colors"
         >
-          📅 Pedidos de visita
+          Pedidos de visita
         </Link>
-        <Link 
-          href="/dashboard/notificacoes" 
+        <Link
+          href="/dashboard/notificacoes"
           className="group flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-colors"
         >
-          🔔 Notificações
+          Notificações
         </Link>
-        <Link 
-          href="/dashboard/perfil" 
+        <Link
+          href="/dashboard/perfil"
           className="group flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-colors"
         >
-          👤 Meu perfil
+          Meu perfil
         </Link>
 
         {isAdmin(role) && (
           <>
             <div className="my-2 border-t border-slate-200 pt-2">
               <p className="px-4 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">Administração</p>
-              <Link 
-                href="/admin" 
+              <Link
+                href="/admin"
                 className="group flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-colors"
               >
-                ⚙️ Painel Admin
+                Painel Admin
               </Link>
-              <Link 
-                href="/admin/revisoes" 
+              <Link
+                href="/admin/revisoes"
                 className="group flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-colors"
               >
-                ✅ Revisões
+                Revisões
               </Link>
-              <Link 
-                href="/admin/estatisticas" 
+              <Link
+                href="/admin/estatisticas"
                 className="group flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-colors"
               >
-                📊 Estatísticas
+                Estatísticas
               </Link>
             </div>
           </>
@@ -139,9 +141,7 @@ export default function DashboardSidebar({ role, userName }: DashboardSidebarPro
 
       {/* Footer */}
       <div className="border-t border-slate-200 p-3">
-        <form action="/api/v1/auth/logout" method="POST">
-          <button type="submit" className="btn-secondary w-full text-sm">Terminar sessão</button>
-        </form>
+        <LogoutButton variant="secondary" className="w-full text-sm" />
       </div>
     </aside>
   );

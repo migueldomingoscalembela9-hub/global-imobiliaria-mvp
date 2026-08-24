@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/auth/session';
 import { prisma } from '@/lib/db';
+import ProfileForm from '@/components/forms/ProfileForm';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,45 +49,14 @@ export default async function PerfilPage() {
           </div>
         </div>
 
-        <form className="space-y-5 p-6">
-          <div>
-            <label htmlFor="name" className="label">Nome completo</label>
-            <input id="name" name="name" type="text" defaultValue={profile.name} className="input" />
-          </div>
-
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <div>
-              <label htmlFor="email" className="label">Email</label>
-              <input id="email" type="email" defaultValue={profile.email} disabled className="input bg-slate-100" />
-              <p className="mt-1 text-xs text-slate-400">O email não pode ser alterado.</p>
-            </div>
-            <div>
-              <label htmlFor="phone" className="label">Telefone</label>
-              <input id="phone" name="phone" type="tel" defaultValue={profile.phone} className="input" />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="avatarUrl" className="label">URL da fotografia</label>
-            <input id="avatarUrl" name="avatarUrl" type="url" defaultValue={profile.avatarUrl ?? ''} className="input" placeholder="https://..." />
-          </div>
-
-          <div className="border-t border-slate-200 pt-5">
-            <h3 className="font-semibold text-slate-900">Alterar palavra-passe</h3>
-            <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div>
-                <label htmlFor="currentPassword" className="label">Palavra-passe atual</label>
-                <input id="currentPassword" name="currentPassword" type="password" className="input" />
-              </div>
-              <div>
-                <label htmlFor="newPassword" className="label">Nova palavra-passe</label>
-                <input id="newPassword" name="newPassword" type="password" className="input" />
-              </div>
-            </div>
-          </div>
-
-          <button type="submit" className="btn-primary">Guardar alterações</button>
-        </form>
+        <div className="p-6">
+          <ProfileForm
+            name={profile.name}
+            email={profile.email}
+            phone={profile.phone}
+            avatarUrl={profile.avatarUrl}
+          />
+        </div>
       </div>
     </div>
   );
